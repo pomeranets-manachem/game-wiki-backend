@@ -8,14 +8,13 @@ const categorySchema = new Schema(
       unique: true
     },
     description : {
-        type : String,
-        required : true
+        type : String
     },
     imageURL : {
         type : String,
         default : "https://static-00.iconduck.com/assets.00/no-image-icon-1024x1024-xg55mf9k.png"
     },
-    games : [{ type : ObjectId, ref: "Game" }]
+    games : [{ type : mongoose.Schema.Types.ObjectId, ref: "Game" }]
   },
   {
     // this second object adds extra properties: `createdAt` and `updatedAt`
