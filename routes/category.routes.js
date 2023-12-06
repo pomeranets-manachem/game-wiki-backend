@@ -7,14 +7,17 @@ router.post("/categories", (req, res, next) => {
     const {
       name,
       description,
-      imageURL,
+      games,
+      imageURL
     } = req.body;
   
     const newCategory = {
       name,
       description,
+      games,
       imageURL
     };
+
   
     Category.create(newCategory)
       .then((newCategory) => {
@@ -29,6 +32,7 @@ router.post("/categories", (req, res, next) => {
 //GET /api/categories
 router.get("/categories", (req, res) => {
     Category.find({})
+    .populate("games")
       .then((categories) => {
         res.status(200).json(categories);
       })
@@ -43,6 +47,7 @@ router.get("/categories/:categoryId", (req, res) => {
     const {categoryId} = req.params;
 
     Category.find({"_id" : categoryId})
+    .populate("games")
       .then((category) => {
         res.status(200).json(category);
       })
@@ -62,16 +67,18 @@ router.put("/categories/:categoryId", (req, res, next) => {
     }
   
     const {
-        name,
-        description,
-        imageURL,
-      } = req.body;
-    
-      const updatedCategory = {
-        name,
-        description,
-        imageURL
-      };
+      name,
+      description,
+      games,
+      imageURL
+    } = req.body;
+  
+    const updatedCategory = {
+      name,
+      description,
+      games,
+      imageURL
+    };
   
     Category.findByIdAndUpdate(categoryId, updatedCategory, {new : true})
       .then((updatedCategory) => {
