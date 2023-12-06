@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const Game = require("../models/Game.model");
+const Category = require ("../models/Category.model")
 const mongoose = require("mongoose");
 
 // POST /api/games
@@ -44,6 +45,19 @@ router.get("/games/:gameId", (req, res) => {
   Game.find({"_id" : gameId})
     .then((game) => {
       res.status(200).json(game);
+    })
+    .catch((err) => {
+      res.status(500).json({message : err.message});
+      console.log(err);
+    });
+});
+
+//GET /api/games/:gameId/categories
+router.get("/games/:gameId/categories", (req, res) => {
+  const {gameId} = req.params;
+  Category.find({"games" : gameId})
+    .then((categories) => {
+      res.status(200).json(categories);
     })
     .catch((err) => {
       res.status(500).json({message : err.message});
