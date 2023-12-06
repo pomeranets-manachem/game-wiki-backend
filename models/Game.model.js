@@ -7,11 +7,6 @@ const gameSchema = new Schema(
       required: [true, "Name is required."],
       unique: true
     },
-    createdBy : {
-        type : mongoose.Schema.Types.ObjectId,
-        ref : "User",
-        required : true
-    },
     informations : {
         type : String,
         required : true
