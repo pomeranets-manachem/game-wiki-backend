@@ -9,6 +9,7 @@ router.post("/games", (req, res, next) => {
       name,
       informations,
       imageURL,
+      categories
     } = req.body;
   
     const newGame = {
@@ -19,6 +20,24 @@ router.post("/games", (req, res, next) => {
   
     Game.create(newGame)
       .then((newGame) => {
+        if(categories) {
+          categories.map((categoryName) => {
+            Category.findOne({"name" : categoryName})
+            .then((categoryDetails) => {
+               categoryDetails.games.push(newGame._id);
+               Category.findByIdAndUpdate(categoryDetails._id, categoryDetails)
+                 .then()
+                 .catch((err) => {
+                   console.log(err);
+                 });
+            })
+            .catch((err) => {
+             console.log(err);
+           });
+         })
+        } else {
+
+        }
         res.status(201).json(newGame);
       })
       .catch((err) => {
