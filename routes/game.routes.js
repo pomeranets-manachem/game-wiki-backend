@@ -167,6 +167,19 @@ router.delete("/games/:gameId", (req, res, next) => {
 
   Game.findByIdAndDelete(gameId)
     .then(() => {
+      Category.find({"games" : gameId})
+      .then((categories) => {
+        categories.map((category => {
+          const newCatArr = category.games.filter(game => game._id != gameId)
+          category.games = newCatArr;
+          Category.findByIdAndUpdate(category._id, category)
+            .then(() => console.log("cat updated by removing the game"))
+            .catch((err) => {
+              console.log(err);
+            });
+        }))
+
+      })
       res.status(200).json({ message : "Game successfully removed !" });
     })
     .catch((err) => {
