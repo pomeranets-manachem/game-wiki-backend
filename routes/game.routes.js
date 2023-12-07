@@ -105,6 +105,8 @@ router.put("/games/:gameId", (req, res, next) => {
     name,
     informations,
     imageURL,
+    previousCategories,
+    updatedCategories
   } = req.body;
 
   const updatedGame = {
@@ -115,6 +117,37 @@ router.put("/games/:gameId", (req, res, next) => {
 
   Game.findByIdAndUpdate(gameId, updatedGame, {new : true})
     .then((updatedGame) => {
+      //we filter previousCategories to keep only those wich are not on updatedCategories = removed ones
+      previousCategories.filter(cat => !updatedCategories.includes(cat))
+        .map( removedCategory => {
+          Category.findOne({"_id" : removedCategory})
+            .then((removedCategoryDetails) => {
+              const newCatArr = removedCategoryDetails.games.filter(game => game._id != gameId)
+              removedCategoryDetails.games = newCatArr;
+              Category.findByIdAndUpdate(removedCategory, removedCategoryDetails)
+                .then(() => console.log("cat updated by removing the game"))
+                .catch((err) => {
+                  console.log(err);
+                });
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        })
+
+      //we filter updatedCategories to keep only those wich are not on previousCategories = added ones
+      updatedCategories.filter(cat => !previousCategories.includes(cat))
+        .map( addedCategory => {
+          Category.findOne({"_id" : addedCategory})
+            .then((categoryDetails) => {
+              categoryDetails.games.push(gameId);
+              Category.findByIdAndUpdate(categoryDetails._id, categoryDetails)
+                .then(() => console.log("cat updated by adding the game !"))
+                .catch((err) => {
+                  console.log(err);
+                });
+            })
+      })
       res.status(200).json(updatedGame);
     })
     .catch((err) => {
