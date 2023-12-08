@@ -21,8 +21,8 @@ router.post("/games", (req, res, next) => {
     Game.create(newGame)
       .then((newGame) => {
         if(categories) {
-          categories.map((categoryName) => {
-            Category.findOne({"name" : categoryName})
+          categories.map((categoryId) => {
+            Category.findOne({"_id" : categoryId})
             .then((categoryDetails) => {
                categoryDetails.games.push(newGame._id);
                Category.findByIdAndUpdate(categoryDetails._id, categoryDetails)
