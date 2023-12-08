@@ -156,6 +156,46 @@ router.put("/games/:gameId", (req, res, next) => {
     });
 });
 
+//POST /api/games/:gameId/comments
+router.post("/games/:gameId/comments", (req,res,next) =>{
+  const {gameId} = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(gameId)) {
+    res.status(400).json({ message: "Specified id is not valid" });
+    return;
+  }
+
+  const {newComment} = req.body;
+
+  Game.findOne({"_id" : gameId})
+    .then((gameDetails) => {
+      if (gameDetails.comments) {
+        gameDetails.comments.push(newComment);
+        Game.findByIdAndUpdate(gameId,gameDetails, {new : true })
+          .then((gameDetails) => {
+            console.log("comment added to Game !");
+            res.status(201).json(gameDetails);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } else {
+        gameDetails.comments = [newComment]
+        Game.findByIdAndUpdate(gameId,gameDetails,{new : true})
+        .then((gameDetails) => {
+          console.log("First comment added to Game !")
+          res.status(201).json(gameDetails);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+})
+
 //DELETE /api/games/:gameId
 router.delete("/games/:gameId", (req, res, next) => {
   const { gameId } = req.params;
