@@ -62,6 +62,7 @@ router.get("/games", (req, res) => {
 router.get("/games/:gameId", (req, res) => {
   const {gameId} = req.params;
   Game.find({"_id" : gameId})
+  .populate({ path: "comments.author", select: 'username' })
     .then((game) => {
       res.status(200).json(game);
     })
@@ -75,6 +76,7 @@ router.get("/games/:gameId", (req, res) => {
 router.get("/games/:gameId/categories", (req, res) => {
   const {gameId} = req.params;
   Game.findOne({"_id" : gameId})
+  .populate({ path: "comments.author", select: 'username' })
     .then((game) => {
       Category.find({"games" : gameId})
       .then((categories) => {
