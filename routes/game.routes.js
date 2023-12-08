@@ -232,6 +232,29 @@ router.put("/games/:gameId/comments/:commentId", (req,res,next) =>{
     });
 })
 
+//DELETE /api/games/:gameId/comments/:commentId
+router.delete("/games/:gameId/comments/:commentId", (req,res,next) =>{
+  const {gameId, commentId} = req.params;
+
+  Game.findOne({"_id" : gameId})
+    .then(gameDetails => {
+      const newComArr = gameDetails.comments.filter(comment => comment._id != commentId)
+      gameDetails.comments = newComArr;
+      Game.findByIdAndUpdate(gameId, gameDetails, {new : true})
+        .then(gameDetails => {
+          console.log("comment deleted to Game !");
+          res.status(200).json(gameDetails);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+
+})
+
 //DELETE /api/games/:gameId
 router.delete("/games/:gameId", (req, res, next) => {
   const { gameId } = req.params;
