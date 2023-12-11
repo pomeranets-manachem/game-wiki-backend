@@ -46,7 +46,7 @@ router.get("/categories", (req, res) => {
 router.get("/categories/:categoryId", (req, res) => {
     const {categoryId} = req.params;
 
-    Category.find({"_id" : categoryId})
+    Category.findOne({"_id" : categoryId})
     .populate("games")
       .then((category) => {
         res.status(200).json(category);
