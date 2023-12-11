@@ -173,7 +173,7 @@ router.post("/games/:gameId/comments", (req,res,next) =>{
     .then((gameDetails) => {
       if (gameDetails.comments) {
         gameDetails.comments.push(newComment);
-        Game.findByIdAndUpdate(gameId,gameDetails, {new : true })
+        Game.findByIdAndUpdate(gameId,{ $push: { comments: newComment } }, {new : true })
           .then((gameDetails) => {
             console.log("comment added to Game !");
             res.status(201).json(gameDetails);
@@ -183,7 +183,7 @@ router.post("/games/:gameId/comments", (req,res,next) =>{
           });
       } else {
         gameDetails.comments = [newComment]
-        Game.findByIdAndUpdate(gameId,gameDetails,{new : true})
+        Game.findByIdAndUpdate(gameId,{ $push: { comments: newComment } },{new : true})
         .then((gameDetails) => {
           console.log("First comment added to Game !")
           res.status(201).json(gameDetails);
