@@ -61,7 +61,7 @@ router.get("/games", (req, res) => {
 //GET /api/games/:gameId
 router.get("/games/:gameId", (req, res) => {
   const {gameId} = req.params;
-  Game.find({"_id" : gameId})
+  Game.findOne({"_id" : gameId})
   .populate({ path: "comments.author", select: 'username' })
     .then((game) => {
       res.status(200).json(game);
