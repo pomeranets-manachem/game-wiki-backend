@@ -242,7 +242,7 @@ router.delete("/games/:gameId/comments/:commentId", (req,res,next) =>{
     .then(gameDetails => {
       const newComArr = gameDetails.comments.filter(comment => comment._id != commentId)
       gameDetails.comments = newComArr;
-      Game.findByIdAndUpdate(gameId, gameDetails, {new : true})
+      Game.updateOne({"_id" : gameId },{$pull: { comments: { _id: commentId } }} )
         .then(gameDetails => {
           console.log("comment deleted to Game !");
           res.status(200).json(gameDetails);
