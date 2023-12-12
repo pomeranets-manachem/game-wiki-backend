@@ -220,7 +220,7 @@ router.put("/games/:gameId/comments/:commentId", (req,res,next) =>{
           return comment;
         }
       })
-      Game.findByIdAndUpdate(gameId,gameDetails, {new : true })
+      Game.updateOne({"_id" : gameId, "comments._id" : commentId },{$set: { 'comments.$.comment': updatedComment }}, {new : true })
           .then((gameDetails) => {
             console.log("comment updated to Game !");
             res.status(200).json(gameDetails);
