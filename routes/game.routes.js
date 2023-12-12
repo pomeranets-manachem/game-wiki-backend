@@ -65,7 +65,7 @@ router.get("/gamesWithCategories", async (req, res) => {
           // include other game properties as needed
           informations: { $first: '$informations' },
           imageURL: { $first: '$imageURL' },
-          categories: { $push: '$categories' },
+          categories: { $first: '$categories' },
         },
       },
     ]);
@@ -250,14 +250,14 @@ router.put("/games/:gameId/comments/:commentId", (req, res, next) => {
           return comment;
         }
       })
-      Game.updateOne({"_id" : gameId, "comments._id" : commentId },{$set: { 'comments.$.comment': updatedComment }}, {new : true })
-          .then((gameDetails) => {
-            console.log("comment updated to Game !");
-            res.status(200).json(gameDetails);
-          })
-          .catch((err) => {
-            console.log(err);
-          });
+      Game.updateOne({ "_id": gameId, "comments._id": commentId }, { $set: { 'comments.$.comment': updatedComment } }, { new: true })
+        .then((gameDetails) => {
+          console.log("comment updated to Game !");
+          res.status(200).json(gameDetails);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     })
     .catch((err) => {
       console.log(err);
@@ -272,7 +272,7 @@ router.delete("/games/:gameId/comments/:commentId", (req, res, next) => {
     .then(gameDetails => {
       const newComArr = gameDetails.comments.filter(comment => comment._id != commentId)
       gameDetails.comments = newComArr;
-      Game.updateOne({"_id" : gameId },{$pull: { comments: { _id: commentId } }} )
+      Game.updateOne({ "_id": gameId }, { $pull: { comments: { _id: commentId } } })
         .then(gameDetails => {
           console.log("comment deleted to Game !");
           res.status(200).json(gameDetails);
