@@ -1,9 +1,10 @@
 const router = require("express").Router();
 const Category = require("../models/Category.model");
 const mongoose = require("mongoose");
+const { isAuthenticated } = require("../middleware/jwt.middleware.js");
 
 // POST /api/categories
-router.post("/categories", (req, res, next) => {
+router.post("/categories", isAuthenticated, (req, res, next) => {
     const {
       name,
       description,
@@ -69,7 +70,7 @@ router.get("/categories/:categoryId", (req, res) => {
   });
 
 //PUT /api/categories/:categoryId
-router.put("/categories/:categoryId", (req, res, next) => {
+router.put("/categories/:categoryId", isAuthenticated, (req, res, next) => {
     const {categoryId} = req.params;
   
     if (!mongoose.Types.ObjectId.isValid(categoryId)) {
@@ -112,7 +113,7 @@ router.put("/categories/:categoryId", (req, res, next) => {
   });
 
 //DELETE /api/categories/:categoryId
-router.delete("/categories/:categoryId", (req, res, next) => {
+router.delete("/categories/:categoryId", isAuthenticated, (req, res, next) => {
     const { categoryId } = req.params;
   
     if (!mongoose.Types.ObjectId.isValid(categoryId)) {
