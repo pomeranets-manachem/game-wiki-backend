@@ -18,32 +18,44 @@ router.post("/games", (req, res, next) => {
     imageURL
   };
 
-  Game.create(newGame)
-    .then((newGame) => {
-      if (categories) {
-        categories.map((categoryId) => {
-          Category.findOne({ "_id": categoryId })
-            .then((categoryDetails) => {
-              categoryDetails.games.push(newGame._id);
-              Category.findByIdAndUpdate(categoryDetails._id, categoryDetails)
-                .then()
-                .catch((err) => {
-                  console.log(err);
-                });
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        })
-      } else {
+  Game.findOne({name})
+    .collation({locale : "en", strength : 2})
+  .then((sameNameGame) => {
+    if (sameNameGame) {
+      res.status(400).json({ message: "The game name is already used." });
+      return;
+    } else {
+      Game.create(newGame)
+      .then((newGame) => {
+        if (categories) {
+          categories.map((categoryId) => {
+            Category.findOne({ "_id": categoryId })
+              .then((categoryDetails) => {
+                categoryDetails.games.push(newGame._id);
+                Category.findByIdAndUpdate(categoryDetails._id, categoryDetails)
+                  .then()
+                  .catch((err) => {
+                    console.log(err);
+                  });
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+          })
+        } else {
+  
+        }
+        res.status(201).json(newGame);
+      })
+      .catch((err) => {
+        res.status(500).json({ message: err.message });
+        console.log(err);
+      });
+    }
+  })
+  .catch((err) => next(err));
 
-      }
-      res.status(201).json(newGame);
-    })
-    .catch((err) => {
-      res.status(500).json({ message: err.message });
-      console.log(err);
-    });
+ 
 });
 
 //GET /api/gamesWithCategories
@@ -147,7 +159,14 @@ router.put("/games/:gameId", (req, res, next) => {
     imageURL
   };
 
-  Game.findByIdAndUpdate(gameId, updatedGame, { new: true })
+  Game.findOne({name})
+  .collation({locale : "en", strength : 2})
+  .then((sameNameGame) => {
+    if (sameNameGame._id != gameId) {
+      res.status(400).json({ message: "The game name is already used." });
+      return;
+    } else {
+      Game.findByIdAndUpdate(gameId, updatedGame, { new: true })
     .then((updatedGame) => {
       //we filter previousCategories to keep only those wich are not on updatedCategories = removed ones
       previousCategories.filter(cat => !updatedCategories.includes(cat))
@@ -186,6 +205,9 @@ router.put("/games/:gameId", (req, res, next) => {
       res.status(500).json({ message: err.message });
       console.log(err);
     });
+    }
+  })
+  .catch((err) => next(err));
 });
 
 //POST /api/games/:gameId/comments
