@@ -19,6 +19,7 @@ router.post("/categories", (req, res, next) => {
     };
 
   Category.findOne({name})
+  .collation({locale : "en", strength : 2})
   .then((sameNameCategory) => {
     if (sameNameCategory) {
       res.status(400).json({ message: "The category name is already used." });
@@ -91,8 +92,9 @@ router.put("/categories/:categoryId", (req, res, next) => {
     };
 
   Category.findOne({name})
+  .collation({locale : "en", strength : 2})
   .then((sameNameCategory) => {
-    if (sameNameCategory) {
+    if (sameNameCategory._id != categoryId) {
       res.status(400).json({ message: "The category name is already used." });
       return;
     } else {
