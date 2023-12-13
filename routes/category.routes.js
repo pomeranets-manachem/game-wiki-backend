@@ -18,15 +18,25 @@ router.post("/categories", (req, res, next) => {
       imageURL
     };
 
-  
+  Category.findOne({name})
+  .then((sameNameCategory) => {
+    if (sameNameCategory) {
+      res.status(400).json({ message: "The category name is already used." });
+      return;
+    } else {
+      
     Category.create(newCategory)
-      .then((newCategory) => {
-        res.status(201).json(newCategory);
-      })
-      .catch((err) => {
-        res.status(500).json({message : err.message});
-        console.log(err);
-      });
+    .then((newCategory) => {
+      res.status(201).json(newCategory);
+    })
+    .catch((err) => {
+      res.status(500).json({message : err.message});
+      console.log(err);
+    });
+    }
+  })
+  .catch((err) => next(err));
+  
   });
 
 //GET /api/categories
@@ -79,8 +89,14 @@ router.put("/categories/:categoryId", (req, res, next) => {
       games,
       imageURL
     };
-  
-    Category.findByIdAndUpdate(categoryId, updatedCategory, {new : true})
+
+  Category.findOne({name})
+  .then((sameNameCategory) => {
+    if (sameNameCategory) {
+      res.status(400).json({ message: "The category name is already used." });
+      return;
+    } else {
+      Category.findByIdAndUpdate(categoryId, updatedCategory, {new : true})
       .then((updatedCategory) => {
         res.status(200).json(updatedCategory);
       })
@@ -88,6 +104,9 @@ router.put("/categories/:categoryId", (req, res, next) => {
         res.status(500).json({message : err.message});
         console.log(err);
       });
+    }
+  })
+  .catch((err) => next(err));
   });
 
 //DELETE /api/categories/:categoryId
