@@ -163,7 +163,7 @@ router.put("/games/:gameId", isAuthenticated, (req, res, next) => {
   Game.findOne({name})
   .collation({locale : "en", strength : 2})
   .then((sameNameGame) => {
-    if (sameNameGame._id != gameId) {
+    if (sameNameGame && sameNameGame._id != gameId) {
       res.status(400).json({ message: "The game name is already used." });
       return;
     } else {
