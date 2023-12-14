@@ -28,8 +28,7 @@ const gameSchema = new Schema(
         required : true
     },
     imageURL : {
-        type : String,
-        default : "https://static-00.iconduck.com/assets.00/no-image-icon-1024x1024-xg55mf9k.png"
+        type : String
     },
     comments : [commentSchema]
   },
