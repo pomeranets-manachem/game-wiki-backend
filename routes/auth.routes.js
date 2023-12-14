@@ -43,12 +43,30 @@ router.post("/signup", (req, res, next) => {
     return;
   }
 
+  if(username.length > 20) {
+    res.status(400).json({
+      message:
+        "Username can't be over 20 characters",
+    });
+    return;
+  }
+
+// Check the users collection if a user with the same username already exists
+  User.findOne({username})
+      .then((sameUsernameUser) => {
+        if (sameUsernameUser) {
+          res.status(400).json({ message: "Username already used." });
+          return;
+        }
+      })
+      .catch((err) => next(err));
+
   // Check the users collection if a user with the same email already exists
   User.findOne({ email })
-    .then((foundUser) => {
+    .then((sameEmailUser) => {
       // If the user with the same email already exists, send an error response
-      if (foundUser) {
-        res.status(400).json({ message: "User already exists." });
+      if (sameEmailUser) {
+        res.status(400).json({ message: "Email already used." });
         return;
       }
 

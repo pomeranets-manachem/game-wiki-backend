@@ -2,9 +2,10 @@ const router = require("express").Router();
 const Game = require("../models/Game.model");
 const Category = require("../models/Category.model")
 const mongoose = require("mongoose");
+const { isAuthenticated } = require("../middleware/jwt.middleware.js");
 
 // POST /api/games
-router.post("/games", (req, res, next) => {
+router.post("/games", isAuthenticated, (req, res, next) => {
   const {
     name,
     informations,
@@ -18,32 +19,44 @@ router.post("/games", (req, res, next) => {
     imageURL
   };
 
-  Game.create(newGame)
-    .then((newGame) => {
-      if (categories) {
-        categories.map((categoryId) => {
-          Category.findOne({ "_id": categoryId })
-            .then((categoryDetails) => {
-              categoryDetails.games.push(newGame._id);
-              Category.findByIdAndUpdate(categoryDetails._id, categoryDetails)
-                .then()
-                .catch((err) => {
-                  console.log(err);
-                });
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        })
-      } else {
+  Game.findOne({name})
+    .collation({locale : "en", strength : 2})
+  .then((sameNameGame) => {
+    if (sameNameGame) {
+      res.status(400).json({ message: "The game name is already used." });
+      return;
+    } else {
+      Game.create(newGame)
+      .then((newGame) => {
+        if (categories) {
+          categories.map((categoryId) => {
+            Category.findOne({ "_id": categoryId })
+              .then((categoryDetails) => {
+                categoryDetails.games.push(newGame._id);
+                Category.findByIdAndUpdate(categoryDetails._id, categoryDetails)
+                  .then()
+                  .catch((err) => {
+                    console.log(err);
+                  });
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+          })
+        } else {
+  
+        }
+        res.status(201).json(newGame);
+      })
+      .catch((err) => {
+        res.status(500).json({ message: err.message });
+        console.log(err);
+      });
+    }
+  })
+  .catch((err) => next(err));
 
-      }
-      res.status(201).json(newGame);
-    })
-    .catch((err) => {
-      res.status(500).json({ message: err.message });
-      console.log(err);
-    });
+ 
 });
 
 //GET /api/gamesWithCategories
@@ -125,7 +138,7 @@ router.get("/games/:gameId/categories", (req, res) => {
 });
 
 //PUT /api/games/:gameId
-router.put("/games/:gameId", (req, res, next) => {
+router.put("/games/:gameId", isAuthenticated, (req, res, next) => {
   const { gameId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(gameId)) {
@@ -147,7 +160,14 @@ router.put("/games/:gameId", (req, res, next) => {
     imageURL
   };
 
-  Game.findByIdAndUpdate(gameId, updatedGame, { new: true })
+  Game.findOne({name})
+  .collation({locale : "en", strength : 2})
+  .then((sameNameGame) => {
+    if (sameNameGame._id != gameId) {
+      res.status(400).json({ message: "The game name is already used." });
+      return;
+    } else {
+      Game.findByIdAndUpdate(gameId, updatedGame, { new: true })
     .then((updatedGame) => {
       //we filter previousCategories to keep only those wich are not on updatedCategories = removed ones
       previousCategories.filter(cat => !updatedCategories.includes(cat))
@@ -186,10 +206,13 @@ router.put("/games/:gameId", (req, res, next) => {
       res.status(500).json({ message: err.message });
       console.log(err);
     });
+    }
+  })
+  .catch((err) => next(err));
 });
 
 //POST /api/games/:gameId/comments
-router.post("/games/:gameId/comments", (req, res, next) => {
+router.post("/games/:gameId/comments", isAuthenticated, (req, res, next) => {
   const { gameId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(gameId)) {
@@ -229,7 +252,7 @@ router.post("/games/:gameId/comments", (req, res, next) => {
 })
 
 //PUT /api/games/:gameId/comments/:commentId
-router.put("/games/:gameId/comments/:commentId", (req, res, next) => {
+router.put("/games/:gameId/comments/:commentId", isAuthenticated, (req, res, next) => {
   const { gameId, commentId } = req.params;
 
 
@@ -265,7 +288,7 @@ router.put("/games/:gameId/comments/:commentId", (req, res, next) => {
 })
 
 //DELETE /api/games/:gameId/comments/:commentId
-router.delete("/games/:gameId/comments/:commentId", (req, res, next) => {
+router.delete("/games/:gameId/comments/:commentId", isAuthenticated, (req, res, next) => {
   const { gameId, commentId } = req.params;
 
   Game.findOne({ "_id": gameId })
@@ -288,7 +311,7 @@ router.delete("/games/:gameId/comments/:commentId", (req, res, next) => {
 })
 
 //DELETE /api/games/:gameId
-router.delete("/games/:gameId", (req, res, next) => {
+router.delete("/games/:gameId", isAuthenticated, (req, res, next) => {
   const { gameId } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(gameId)) {

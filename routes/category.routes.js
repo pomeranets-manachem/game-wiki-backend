@@ -1,9 +1,10 @@
 const router = require("express").Router();
 const Category = require("../models/Category.model");
 const mongoose = require("mongoose");
+const { isAuthenticated } = require("../middleware/jwt.middleware.js");
 
 // POST /api/categories
-router.post("/categories", (req, res, next) => {
+router.post("/categories", isAuthenticated, (req, res, next) => {
     const {
       name,
       description,
@@ -18,15 +19,26 @@ router.post("/categories", (req, res, next) => {
       imageURL
     };
 
-  
+  Category.findOne({name})
+  .collation({locale : "en", strength : 2})
+  .then((sameNameCategory) => {
+    if (sameNameCategory) {
+      res.status(400).json({ message: "The category name is already used." });
+      return;
+    } else {
+      
     Category.create(newCategory)
-      .then((newCategory) => {
-        res.status(201).json(newCategory);
-      })
-      .catch((err) => {
-        res.status(500).json({message : err.message});
-        console.log(err);
-      });
+    .then((newCategory) => {
+      res.status(201).json(newCategory);
+    })
+    .catch((err) => {
+      res.status(500).json({message : err.message});
+      console.log(err);
+    });
+    }
+  })
+  .catch((err) => next(err));
+  
   });
 
 //GET /api/categories
@@ -58,7 +70,7 @@ router.get("/categories/:categoryId", (req, res) => {
   });
 
 //PUT /api/categories/:categoryId
-router.put("/categories/:categoryId", (req, res, next) => {
+router.put("/categories/:categoryId", isAuthenticated, (req, res, next) => {
     const {categoryId} = req.params;
   
     if (!mongoose.Types.ObjectId.isValid(categoryId)) {
@@ -79,8 +91,15 @@ router.put("/categories/:categoryId", (req, res, next) => {
       games,
       imageURL
     };
-  
-    Category.findByIdAndUpdate(categoryId, updatedCategory, {new : true})
+
+  Category.findOne({name})
+  .collation({locale : "en", strength : 2})
+  .then((sameNameCategory) => {
+    if (sameNameCategory._id != categoryId) {
+      res.status(400).json({ message: "The category name is already used." });
+      return;
+    } else {
+      Category.findByIdAndUpdate(categoryId, updatedCategory, {new : true})
       .then((updatedCategory) => {
         res.status(200).json(updatedCategory);
       })
@@ -88,10 +107,13 @@ router.put("/categories/:categoryId", (req, res, next) => {
         res.status(500).json({message : err.message});
         console.log(err);
       });
+    }
+  })
+  .catch((err) => next(err));
   });
 
 //DELETE /api/categories/:categoryId
-router.delete("/categories/:categoryId", (req, res, next) => {
+router.delete("/categories/:categoryId", isAuthenticated, (req, res, next) => {
     const { categoryId } = req.params;
   
     if (!mongoose.Types.ObjectId.isValid(categoryId)) {
