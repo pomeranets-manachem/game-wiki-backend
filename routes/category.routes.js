@@ -95,7 +95,7 @@ router.put("/categories/:categoryId", isAuthenticated, (req, res, next) => {
   Category.findOne({name})
   .collation({locale : "en", strength : 2})
   .then((sameNameCategory) => {
-    if (sameNameCategory._id != categoryId) {
+    if (sameNameCategory && sameNameCategory._id != categoryId) {
       res.status(400).json({ message: "The category name is already used." });
       return;
     } else {
